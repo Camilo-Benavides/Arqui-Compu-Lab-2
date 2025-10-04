@@ -1,14 +1,21 @@
 .data
 	filename: .asciiz "C:/Users/CamiloBena/Documents/Arqui Compu/prueba.txt"
 	buffer: .space 4096 # 4KiB
-	characters_start: .byte 0x20 # Código en hexadecimal del caracter de Inicio
-	characters_end: .byte 0x7e # Código en hexadecimal del caracter Final
+	characters_start: .word 0x20 # Código en hexadecimal del caracter de Inicio
+	characters_end: .word 0x7e # Código en hexadecimal del caracter Final
 	error_open_message: .asciiz "Ocurrió un error al abrir el archivo"
 	error_range_message: .asciiz "El archivo contiene carácteres fuera del rango permitido"
+#	lf_code: .byte 0x0a
+#	cr_code: .byte 0x0d
+	caracters_range: 
 .text	
 
 .globl main
 main:
+	li $t3, 0x0a
+	li $t4, 0x0d
+	lw $s2, characters_start
+	lw $s3, characters_end
 	la $t2, buffer
 	li $t1, 0 # Contador
 	jal load_txt
@@ -54,15 +61,16 @@ for_document:
 	bge $t1, $s1, end_for
 	
 	lb $a0, 0($t2)
-	li $v0, 11
-	syscall
 	
-	# Incremento (visto en clase)
-	addi $t1, $t1, 1 # i++
-	addi $t2, $t2, 1	
+	beq $a0, $t3, character_valid
 	
-	j for_document
+	beq $a0, $t4, character_valid
+	
+	blt $a0, $s2, handle_range_ascii_error
 
+	bgt $a0, $s3, handle_range_ascii_error
+	
+	j character_valid
 handle_open:
 	li $v0, 4 # Código syscall para imprimir un String
 	la $a0, error_open_message # Cargamos dirección de memoria con el contenido del mensaje
@@ -80,3 +88,14 @@ end_for: # Este es el cierre final del archivo, no el de arriba
 	move $a0, $v0
 	syscall
 	j exit
+	
+character_valid:
+	li $v0, 11 
+	syscall
+
+	# Incremento (visto en clase)
+	addi $t1, $t1, 1 # i++
+	addi $t2, $t2, 1
+		
+	j for_document
+	
