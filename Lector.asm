@@ -1,25 +1,20 @@
-.globl main
-
 .data
 	filename: .asciiz "C:/Users/CamiloBena/Documents/Arqui Compu/Practica 2/prueba.txt"
 	output_filename: .asciiz "C:/Users/CamiloBena/Documents/Arqui Compu/Practica 2/rle_compress.bin"
-
-	error_open_message: .asciiz "Ocurrio un error al abrir el archivo\n"
-	error_range_message: .asciiz "El archivo contiene caracteres fuera del rango permitido\n"
-	
-	bad_compression_message: .asciiz "La compresión ha sido ineficiente"
-	
-	rc_message: .asciiz "RC: "
-	space_msg: .asciiz " "
-	newline: .asciiz "\n"
-
-	buff_size: .word 4096
 	buffer: .space 4096 # 4KiB
 	buffer_compresion: .space 4100 # 4KiB + 4 bytes para checksum
 	characters_start: .word 0x20 # Codigo en hexadecimal del caracter de Inicio
 	characters_end: .word 0x7e # Codigo en hexadecimal del caracter Final
+	error_open_message: .asciiz "Ocurrio un error al abrir el archivo\n"
+	error_range_message: .asciiz "El archivo contiene caracteres fuera del rango permitido\n"
+	bad_compression_message: .asciiz "La compresión ha sido ineficiente"
+	rc_message: .asciiz "RC: "
+	space_msg: .asciiz " "
+	newline: .asciiz "\n"
 	
 .text	
+ 
+.globl main
 main:	
 	li $t3, 0x0a		# Código Hexadecimal de LF
 	li $t4, 0x0d		# Código Hexadecimal de CR
@@ -30,37 +25,33 @@ main:
 	addi $t7, $t7, 4		# Reservar 4 bytes al inicio para checksum
 	la $t0, buffer_compresion
 	addi $t0, $t0, 4		# Apuntar después del checksum
-	li $t1, 0 				# Contador
-
-	la $a0, filename		
-	la $a2, buffer			
-	la $a3, buff_size		
+	li $t1, 0 			# Contador
 	jal open_and_read_file
-
 	j for_document
 	
 	
 #---------------------------------------------------------------------------------------------
 # Procedimiento para abrir y leer el archivo de entrada
-# int open_and_read_file(string filename, space buffer)
 open_and_read_file:
-	li $v0, 13 				# Syscall 13, open file
-	li $a1, 0 				
+
+	li $v0, 13 		# Syscall 13, open file
+	la $a0, filename 		# Cargar direccion 
+	li $a1, 0 			# 
 	syscall
 	
-	bltz $v0, handle_open 	# Si v0 es negativo entonces indica que hubo un error abriendo el archivo
+	bltz $v0, handle_open # Si v0 es negativo entonces indica que hubo un error abriendo el archivo
 	
 	move $s0, $v0
 	
 	li $v0, 14
 	move $a0, $s0
-	la $a1, ($a2)		# Loads the buffer in the arg for the syscall
-	la $a2, ($a3)		# li $a2, 4096 	# Número máximo de bits a leer
+	la $a1, buffer
+	li $a2, 4096 	# Número máximo de bits a leer
 	syscall
 	
-	move $s1, $v0 	# No. caracteres leidos
+	move $s1, $v0
 	
-	# jr $ra 	# Sobraria ya que se llego usando jal
+	jr $ra
 
 #-------------------------------------------------------------------------------------------------
 # Procedimiento para calcular el checksum
