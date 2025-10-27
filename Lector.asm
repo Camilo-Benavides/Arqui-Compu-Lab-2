@@ -161,7 +161,6 @@ open_and_write_file:                                                    # Etique
     
     	bltz $v0, handle_open                                               # Si v0 < 0, hubo error al abrir
     	sub $a2, $t7, $t0                                                   # Calcular tamaño de datos comprimidos
-    	addi $a2, $a2, 4                                                    # Agregar 4 bytes del checksum al tamaño
     
     	li $v0, 15                                                          # Syscall 15: write file
     	la $a1, buffer_compresion                                           # Cargar dirección del buffer con datos a escribir
