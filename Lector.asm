@@ -108,12 +108,14 @@ show_compression_ratio:                                                 # Etique
 
     	sub $s7, $t7, $t0                                                   # Calcular tamaño comprimido (puntero_final - puntero_inicial)
     
-    	li $v0, 4                                                           # Syscall 4: print string
-    	la $a0, rc_message                                                  # Cargar mensaje "RC:"
-    	syscall                                                             # Imprimir mensaje
-    
     	div $s1, $s7                                                        # Dividir tamaño original entre comprimido
     	mflo $t9                                                            # Obtener cociente (resultado entero de la división)
+    	
+    	blt $t9, 1, bad_compression                                         # Si RC < 1, compresión ineficiente
+    
+        	li $v0, 4                                                           # Syscall 4: print string
+    	la $a0, rc_message                                                  # Cargar mensaje "RC:"
+    	syscall                                                             # Imprimir mensaje
     
     	li $v0, 1                                                           # Syscall 1: print integer
     	move $a0, $t9                                                       # Cargar valor de RC
@@ -126,8 +128,11 @@ show_compression_ratio:                                                 # Etique
     	li $v0, 4                                                           # Syscall 4: print string
     	la $a0, checksum_hex                                                # Cargar checksum en formato hexadecimal
     	syscall                                                             # Imprimir checksum en hexadecimal
-    
-    	blt $t9, 1, bad_compression                                         # Si RC < 1, compresión ineficiente
+    	
+    	li $v0, 11                                                          # Syscall 11: print character
+    	li $a0, 32                                                          # Código ASCII de espacio
+    	syscall                                                             # Imprimir espacio    
+
     	jr $ra                                                              # Retornar al llamador
 
 bad_compression:                                                        # Etiqueta para compresión ineficiente
