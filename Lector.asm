@@ -67,7 +67,7 @@ checksum_loop:                                                          # Bucle 
 
 end_checksum:                                                           # Fin del cálculo
 
-    	andi $s5, $s5, 0xFF                                                 # RC = suma % 256 (quedarse con byte menos significativo)
+    	andi $s5, $s5, 0xFF                                                 # RC = tamaño cadena de entrada / tamaño cadena comprimida
     	
     	la $s6, memory_space_checksum                                       # Cargar dirección del espacio de memoria para checksum
     	sb $s5, 0($s6)                                                      # Guardar checksum en byte 0
